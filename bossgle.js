@@ -1,171 +1,161 @@
+var score = 0;
+var letterContainer = [];
+var letters = [];
+var active_letters = [];
+var word_list = [];
+var word_count = [];
+var count = 60;
 
-$(document).ready(function () {
-
-    var lettersHTML = '';
-    var totalScore = 0;
-    var totalWords = 0;
-    var wordHash = {};
-
-    // Set initial random letters.
-    randomLetters();
-
-    if (timer() === 0) {
-      console.log('Game Ended');
-    }
-
-    // The 16 boxes are in the list section.
-    $('.aligner-item').click(function () {
-
-      var idElement = document.getElementById(this.id);
-
-      if (!idElement.disabled) {
-        var content = idElement.innerHTML;
-
-        idElement.style.backgroundColor = 'red';
-
-        lettersHTML += content;
-        $('#letters').html(lettersHTML);
-
-        // Disable clicked button.
-        idElement.disabled = true;
-      }
-
-    });
-
-    // Clear the letter field.
-    $('#clear').on('click', function () {
-      resetBoxes();
-      $('#letters').html('Selected Letters');
-      lettersHTML = '';
-    });
-
-    // Submit the letter field and add to word list.
-    $('#submit').on('click', function () {
-      if (lettersHTML.length > 0) {
-        if (!(lettersHTML in wordHash)) {
-          // document.getElementById('chosen-words').innerHTML += lettersHTML + '<br>';
-
-          // Check if word has at least three letters.
-          // If so update word score and total score.
-          var oneWordScore = 0;
-          if (lettersHTML.length > 2) {
-            oneWordScore = checkWord(lettersHTML);
-            totalScore += oneWordScore;
-          }
-
-          document.getElementById('score-tally').innerHTML = totalScore;
-
-          // Add key/value to word hash.
-          wordHash[lettersHTML] = oneWordScore;
-
-          // Convert hash to 2 arrays. One for keys and the other for values.
-          var keys = Object.keys(wordHash);
-          var values = keys.map(function (v) { return wordHash[v]; });
-
-          // Clear words and scores before reversing them.
-          document.getElementById('chosen-words').innerHTML = '';
-          document.getElementById('word-score').innerHTML = '';
-
-          // Reverse words and scores.
-          for (var i = keys.length - 1; i >= 0; i--) {
-            document.getElementById('chosen-words').innerHTML += keys[i] + '<br>';
-            document.getElementById('word-score').innerHTML += values[i] + '<br>';
-          }
-
-          $('#letters').html('<br>');
-          lettersHTML = '';
-
-          // Reset the box colors.
-          resetBoxes();
-        }
-      }
-
-      // Clear the log html string. Always at the end!
-      lettersHTML = '';
-    });
-
-    // Reset board.
-    $('#reset').on('click', function () {
-      $('#word-score').html('');
-      $('#chosen-words').html('');
-      $('#letters').html('Selected Letters');
-      $('#score-tally').html('');
-      lettersHTML = '';
-      totalScore = 0;
-      resetBoxes();
-      randomLetters();
-      wordHash = {};
-    });
-
-  });
-
-function checkWord(word) {
-
-  var wordScore = 0;
-  var wordCase;
-
-  // The 1000 word dictionary is in lowere case except 'I'.
-  // Cover this condition.
-  if (word !== 'I') {
-    wordCase = word.toLowerCase();
-  } else {
-    wordCase = word;
-  }
-
-  if (isBasicWord(wordCase)) {
-    wordScore = 9 * (word.length);
-  }
-
-  return wordScore;
-}
-
+//random letter generator
 function randomLetters() {
-
-  var num;
-  var char;
-
-  for (var i = 1; i < 17; i++) {
-    // Random letter ascii code between 65 and 90 (A-Z).
-    // Max (excluded) = 91, Min (included) = 65.
-    num = Math.floor(Math.random() * (91 - 65)) + 65;
-
-    // Convert ascii number to character.
-    char = String.fromCharCode(num);
-
-    // Change box to new character.
-    var boxID = 'box' + i;
-    document.getElementById(boxID).innerHTML = char;
-    var idElement = document.getElementById(boxID);
-  }
-
+  var num = Math.floor(Math.random() * 26);
+  var letter = String.fromCharCode(num + 65);
+  return letter;
 }
-
-// Reset the 16 boxes to original color.
-// Enable the boxes.
-function resetBoxes() {
-  for (var i = 1; i < 17; i++) {
-    var boxID = 'box' + i;
-    var idElement = document.getElementById(boxID);
-
-    // TODO: Color to global variable?
-    idElement.style.backgroundColor = '#69b390';
-    idElement.disabled = false;
-  }
+//displays letters 
+function display_letters() {
+  $('#letter-container').html(active_letters.join(''));
 }
-
-function timer() {
-  var timeInterval = 9;
-  setInterval(function () {
-    document.getElementById('timer').innerHTML = timeInterval;
-    if (timeInterval === 0) {
-      // alert('Time Ran Out!');
-      return timeInterval;
+// score updates
+function update_score(add_me) {
+  var $score = $('#totalScore');
+  $score.html(parseInt($score.html()) + add_me);
+}
+//correct word counter
+function update_word_count() {
+  var $count = $('#wordCount');
+  word_count.push($count);
+  $count.html(word_count.length);
+}
+// Reset Board
+//function reset_game() {
+//  active_letters.length = 0;
+//  display_letters();
+//  $('.flex-item.box').removeClass('box-disabled');
+//}
+$(function () {
+  $('.flex-item.box').on('click', function (e) {
+    if ($(this).hasClass('box-disabled')) return;
+    //If the jquery wrapped object that this element
+    active_letters.push(this.innerHTML);
+    console.log(active_letters);
+    display_letters();
+    $(this).addClass('box-disabled');
+  }).each(function (i, item) {
+    var $this = $(item),
+      letter = randomLetters();
+    //this function handles the initial setup.
+    while (letters.indexOf(letter) != -1) {
+      letter = randomLetters();
     }
+    letters.push(letter);
+    $this.html(letter);
+  });
+});
 
-    timeInterval--;
-  }, 1000);
+for (var i = 0; i < $('.flex-item').length; i++) {
+  item = $('.flex-item')[i];
 }
 
-function logWords() {
+//clear and un disable the previously chosen letters
+$(function () {
+  $('.btn-danger').on('click', function () {
+    active_letters.length = 0;
+    display_letters();
+    console.log(active_letters);
+    $('.flex-item.box').removeClass('box-disabled');
+  });
+});
 
+
+//the submit button does a whole lot of stuff.
+//first it un disables all the disabled letter boxes
+$(function () {
+  $('.btn-primary').on('click', function (e) {
+    var word = active_letters.join('').toLowerCase();
+    console.log(word, isBasicWord(word));
+    var wordUp = word.toUpperCase();
+    var checkDouble = word_list.indexOf(wordUp)
+    $('.flex-item.box').removeClass('box-disabled');
+    // then it checks if there is a word submitted
+    if (word <= 0) {
+      active_letters.length = [];
+      display_letters();
+      //checks to see if the submitted word is listed already and if listed will receive no points
+    } else if (checkDouble >= 0) {
+      active_letters.length = [];
+      display_letters();
+      word_list.unshift(wordUp);
+      var score = 0;
+      var new_items = $('<div class="col-7">' + wordUp + '</div><div class="col-5">' + score + '</div>');
+      $('#current-words').prepend(new_items);
+      update_score(score);
+      // checks if the word is "I" because "I" is in the dictionary provided but not "i"
+    } else if (wordUp == "I") {
+      active_letters.length = [];
+      display_letters();
+      word_list.unshift(wordUp);
+      var score = 9;
+      var new_items = $('<div class="col-7">' + wordUp + '</div><div class="col-5">' + score + '</div>');
+      $('#current-words').prepend(new_items);
+      update_score(score);
+      update_word_count();
+      // checks against extremely limited dictionary
+    } else if (isBasicWord(word)) {
+      active_letters.length = [];
+      display_letters();
+      word_list.unshift(wordUp);
+      var score = 9 * word.length;
+      var new_items = $('<div class="col-7">' + wordUp + '</div><div class="col-5">' + score + '</div>');
+      $('#current-words').prepend(new_items);
+      update_score(score);
+      update_word_count();
+      // if it doesnt pass anything before this it isnt a word and needs to get out of my face
+    } else {
+      active_letters.length = [];
+      display_letters();
+      word_list.unshift(wordUp);
+      var score = 0;
+      var new_items = $('<div class="col-7">' + wordUp + '</div><div class="col-5">' + score + '</div>');
+      $('#current-words').prepend(new_items);
+      update_score(score);
+    }
+  });
+});
+
+
+//update count down display
+$("#counter").text(count);
+
+
+timer = setTimeout(update, 1000);
+
+//timer function to disable  all buttons except the reset game button
+function update() {
+  if (count > 0) {
+    $("#counter").text(--count);
+    timer = setTimeout(update, 1000);
+  } else {
+    alert("Game Over Meow");
+    active_letters.length = 0;
+    display_letters();
+    $('.flex-item.box').addClass('box-disabled');
+    $('#Button').prop('disabled', true);
+    $('#button').prop('disabled', true);
+  }
 }
+
+//function to reset game
+$('.btn-warning').on('click', function () {
+  $('#Button').prop('disabled', false);
+  $('#button').prop('disabled', false);
+  score = 0;
+  letterContainer = [];
+  letters = [];
+  word_list = [];
+  word_count = [];
+  count = 60;
+  active_letters.length = 0;
+  display_letters();
+  $('.flex-item.box').removeClass('box-disabled');
+});
