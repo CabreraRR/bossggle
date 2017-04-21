@@ -1,0 +1,19 @@
+{
+  "name": "web-dev",
+  "version": "1.0.0",
+  "description": "something",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "test",
+    "bootcamp",
+    "go",
+    "go",
+    "power",
+    "rangers"
+  ],
+  "author": "roel cabrera",
+  "license": "MIT"
+}
